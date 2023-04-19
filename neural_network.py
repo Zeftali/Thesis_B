@@ -6,12 +6,12 @@ from keras.callbacks import EarlyStopping
 from sklearn.decomposition import PCA
 
 #load the data from an Excel file 
-data = pd.read_excel('Mirai.xlsx')
+data = pd.read_csv('Mirai.csv')
 X = data.drop(columns=['target']).values
 y = data['target'].values
 
 #PCA for feature extraction 
-pca = PCA(n_components=5)
+pca = PCA(n_components=10)
 X = pca.fit.transform(X)
 
 #split the data into training and validation sets 
@@ -27,7 +27,7 @@ num_classes = len(set(y))
 model = Sequential()
 
 # add LSTM layer with dropout, activation, normalization and regularisation
-model.add(LSTM(units=64, input_shape=(X_train.shape[1], X_train.shape[2]), return_sequences=True, kernel_regularizer=l2(0.01)))
+model.add(LSTM(units=64, input_shape = None, return_sequences=True, kernel_regularizer=l2(0.01)))
 model.add(Dropout(0.2))
 model.add(Activation('relu'))
 model.add(BatchNormalization())
@@ -60,4 +60,4 @@ model.compile(optimizer='adam', loss='sparse_categorical_crossentropy', metrics=
 early_stop = EarlyStopping(monitor='val_loss', patience=5, verbose=1)
 
 # train the model
-history = model.fit(X_train, y_train, epochs=100, batch_size=120, validation_data=(X_val, y_val), callbacks=[early_stop])
+history = model.fit(X_train, y_train, epochs=100, batch_size=120, validation_data=(X_val.reshape(-1, 1, num_input_features), y_val), callbacks=[early_stop])
