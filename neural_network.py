@@ -1,6 +1,22 @@
+import pandas as pd
 from keras.models import Sequential
 from keras.layers import Dense, LSTM, Dropout, Activation, BatchNormalization
 from keras.regularizers import l2
+from keras.callbacks import EarlyStopping
+
+#load the data from an Excel file 
+data = pd.read_excel('data.xlsx')
+X = data.drop(columns=['target']).values
+y = data['target'].values
+
+#split the data into training and validation sets 
+train_size = int(0.8 * len(X))
+X_train, y_train = X[:train_size], y[:train_size]
+X_val, y_val = X[train_size:], y[train_size:]
+
+#get number of input features and output classes 
+num_input_features = X_train.shape[1]
+num_classes = len(set(y))
 
 # define the model architecture
 model = Sequential()
