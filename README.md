@@ -6,7 +6,7 @@ Modifications will be more in-line with the preliminary information researched d
 - A data preprocessing stage and feature extraction/feature selection will be implemented before the data is used during training and testing -- Currently being implemented 
 - Potentially a fourth LSTM layer -- Implemented
 - Implementation of the activation, normalization and regularization layers (and their respective functions) -- Implemented
-- Hyperparameter reserach -- Currently trial and guessing 
+- Hyperparameter reserach -- Currently trial and error 
 
 NOTE
 - Subject to change as project progresses 
