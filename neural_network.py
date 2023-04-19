@@ -3,11 +3,16 @@ from keras.models import Sequential
 from keras.layers import Dense, LSTM, Dropout, Activation, BatchNormalization
 from keras.regularizers import l2
 from keras.callbacks import EarlyStopping
+from sklearn.decomposition import PCA
 
 #load the data from an Excel file 
 data = pd.read_excel('data.xlsx')
 X = data.drop(columns=['target']).values
 y = data['target'].values
+
+#PCA for feature extraction 
+pca = PCA(n_components=5)
+X = pca.fit.transform(X)
 
 #split the data into training and validation sets 
 train_size = int(0.8 * len(X))
