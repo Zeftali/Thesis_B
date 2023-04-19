@@ -6,7 +6,7 @@ from keras.callbacks import EarlyStopping
 from sklearn.decomposition import PCA
 
 #load the data from an Excel file 
-data = pd.read_excel('data.xlsx')
+data = pd.read_excel('Mirai.xlsx')
 X = data.drop(columns=['target']).values
 y = data['target'].values
 
