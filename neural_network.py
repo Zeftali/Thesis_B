@@ -1,63 +1,101 @@
 import pandas as pd
+import numpy as np
 from keras.models import Sequential
 from keras.layers import Dense, LSTM, Dropout, Activation, BatchNormalization
 from keras.regularizers import l2
 from keras.callbacks import EarlyStopping
 from sklearn.decomposition import PCA
 
-#load the data from an Excel file 
-data = pd.read_csv('Mirai.csv')
-X = data.drop(columns=['target']).values
-y = data['target'].values
+def prepare_data():
+    # load the data from an Excel file 
+    data = pd.read_csv('Mirai.csv')
+    
+    # drop null values
+    data.dropna(inplace=True)
 
-#PCA for feature extraction 
-pca = PCA(n_components=10)
-X = pca.fit.transform(X)
+    # encode categorical variables
+    data = pd.get_dummies(data)
 
-#split the data into training and validation sets 
-train_size = int(0.8 * len(X))
-X_train, y_train = X[:train_size], y[:train_size]
-X_val, y_val = X[train_size:], y[train_size:]
+    # select numeric columns only
+    data = data.select_dtypes(include=np.number)
 
-#get number of input features and output classes 
-num_input_features = X_train.shape[1]
-num_classes = len(set(y))
+    # split data into X and y
+    target_col = 'Flow_Duration'
+    X = data.drop(columns=[target_col], axis=1).values
+    y = data[target_col].values
+
+    # PCA for feature extraction 
+    pca = PCA(n_components=10)
+    X = pca.fit_transform(X)
+
+    # split the data into training and validation sets 
+    train_size = int(0.8 * len(X))
+    X_train, y_train = X[:train_size], y[:train_size]
+    X_val, y_val = X[train_size:], y[train_size:]
+
+    # get number of input features and output classes 
+    num_input_features = X_train.shape[1]
+    num_classes = len(set(y))
+
+    return X_train.reshape(-1, 1, num_input_features), y_train, X_val.reshape(-1, 1, num_input_features), y_val, num_input_features, num_classes
 
 # define the model architecture
-model = Sequential()
+def define_model(num_input_features, num_classes):
+    model = Sequential()
 
-# add LSTM layer with dropout, activation, normalization and regularisation
-model.add(LSTM(units=64, input_shape = None, return_sequences=True, kernel_regularizer=l2(0.01)))
-model.add(Dropout(0.2))
-model.add(Activation('relu'))
-model.add(BatchNormalization())
+    # add LSTM layer with dropout, activation, normalization and regularisation
+    model.add(LSTM(units=64, input_shape = (1, num_input_features), return_sequences=True, kernel_regularizer=l2(0.01)))
+    model.add(Dropout(0.2))
+    model.add(Activation('relu'))
+    model.add(BatchNormalization())
 
-# add another LSTM layer with dropout, activation, normalization and regularisation
-model.add(LSTM(units=64, return_sequences=True, kernel_regularizer=l2(0.01)))
-model.add(Dropout(0.2))
-model.add(Activation('relu'))
-model.add(BatchNormalization())
+    # add another LSTM layer with dropout, activation, normalization and regularisation
+    model.add(LSTM(units=64, return_sequences=True, kernel_regularizer=l2(0.01)))
+    model.add(Dropout(0.2))
+    model.add(Activation('relu'))
+    model.add(BatchNormalization())
 
-# add third LSTM layer with dropout, activation, normalization and regularisation
-model.add(LSTM(units=64, kernel_regularizer=l2(0.01)))
-model.add(Dropout(0.2))
-model.add(Activation('relu'))
-model.add(BatchNormalization())
+    # add third LSTM layer with dropout, activation, normalization and regularisation
+    model.add(LSTM(units=64, kernel_regularizer=l2(0.01)))
+    model.add(Dropout(0.2))
+    model.add(Activation('relu'))
+    model.add(BatchNormalization())
 
-#add fourth LSTM layer with dropout, activation, normalisation and regularisation 
-model.add(LSTM(units=64, kernel_regularizer=l2(0.01)))
-model.add(Dropout(0.2))
-model.add(Activation('relu'))
-model.add(BatchNormalization())
+    #add fourth LSTM layer with dropout, activation, normalisation and regularisation 
+    model.add(LSTM(units=64, kernel_regularizer=l2(0.01)))
+    model.add(Dropout(0.2))
+    model.add(Activation('relu'))
+    model.add(BatchNormalization())
 
-# add output layer
-model.add(Dense(units=num_classes, activation='softmax'))
+    # add output layer
+    model.add(Dense(units=num_classes, activation='softmax'))
 
-# compile the model
-model.compile(optimizer='adam', loss='sparse_categorical_crossentropy', metrics=['accuracy'])
+    print(model.summary())
 
-# set early stopping to prevent overfitting
-early_stop = EarlyStopping(monitor='val_loss', patience=5, verbose=1)
+    # compile the model
+    model.compile(optimizer='adam', loss='sparse_categorical_crossentropy', metrics=['accuracy'])
 
-# train the model
-history = model.fit(X_train, y_train, epochs=100, batch_size=120, validation_data=(X_val.reshape(-1, 1, num_input_features), y_val), callbacks=[early_stop])
+    return model
+
+def train_model():
+    X_train, y_train, X_val, y_val, num_input_features, num_classes = prepare_data()
+
+    # define the model
+    model = define_model(num_input_features, num_classes)
+
+    # set early stopping to prevent overfitting
+    early_stop = EarlyStopping(monitor='val_loss', patience=10, verbose=1)
+
+    # train the model
+    model.fit(X_train, y_train, batch_size=64, epochs=100, validation_data=(X_val, y_val), callbacks=[early_stop])
+    return model
+
+
+if __name__ == '__main__':
+    # train the model and get the trained model
+    model = train_model()
+
+    # evaluate the model on validation data and print accuracy
+    X_train, y_train, X_val, y_val, num_input_features, num_classes = prepare_data()
+    score = model.evaluate(X_val.reshape(-1, 1, num_input_features), y_val, verbose=0)
+    print('Validation accuracy:', score[1])
