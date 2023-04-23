@@ -4,9 +4,10 @@ from keras.models import Sequential
 from keras.layers import Dense, LSTM, Dropout, Activation, BatchNormalization
 from keras.regularizers import l2
 from keras.callbacks import EarlyStopping
+
 from sklearn.decomposition import PCA
 
-def prepare_data():
+def prepare_data(n_components=10, batch_size=64):
     # load the data from the CSV file 
     data = pd.read_csv('Mirai.csv')
     
@@ -19,25 +20,29 @@ def prepare_data():
     # select numeric columns only
     data = data.select_dtypes(include=np.number)
 
+    # apply PCA to reduce the number of input features
+    pca = PCA(n_components=n_components)
+    X_pca = pca.fit_transform(data.drop(columns=['Flow_Duration'], axis=1).values)
+
     # split data into X and y
     target_col = 'Flow_Duration'
-    X = data.drop(columns=[target_col], axis=1).values
     y = data[target_col].values
-    
+    num_classes = len(np.unique(y))
+
     # reshape X into a 3D array with shape (n_samples, 2, num_input_features)
-    X = X.reshape(-1, 2, X.shape[1])
+    X = X_pca.reshape(-1, 2, n_components)
 
     # split the data into training and validation sets 
     train_size = int(0.8 * len(X))
+    num_batches = train_size // batch_size
+    train_size = num_batches * batch_size
     X_train, y_train = X[:train_size], y[:train_size]
     X_val, y_val = X[train_size:], y[train_size:]
 
-    # get number of input features and output classes 
+    # get number of input features 
     num_input_features = X_train.shape[2]
-    num_classes = len(set(y))
 
-    return X_train, y_train, X_val, y_val, num_input_features, num_classes
-
+    return X_train, y_train, X_val, y_val, num_input_features, num_classes, num_batches
 
 # define the model architecture
 def define_model(num_input_features, num_classes):
@@ -67,6 +72,9 @@ def define_model(num_input_features, num_classes):
     model.add(Activation('relu'))
     model.add(BatchNormalization())
 
+    # add dense layer
+    model.add(Dense(units=32, activation='relu'))
+
     # add output layer
     model.add(Dense(units=num_classes, activation='softmax'))
 
@@ -76,7 +84,7 @@ def define_model(num_input_features, num_classes):
     return model
 
 def train_model():
-    X_train, y_train, X_val, y_val, num_input_features, num_classes = prepare_data()
+    X_train, y_train, X_val, y_val, num_input_features, num_classes, num_batches = prepare_data(n_components=10, batch_size=64)
 
     # define the model
     model = define_model(num_input_features, num_classes)
@@ -85,7 +93,7 @@ def train_model():
     early_stop = EarlyStopping(monitor='val_loss', patience=10, verbose=1)
 
     # train the model
-    model.fit(X_train, y_train, batch_size=64, epochs=100, validation_data=(X_val, y_val), callbacks=[early_stop])
+    model.fit(X_train, y_train, num_batches, epochs=100, validation_data=(X_val, y_val), callbacks=[early_stop])
     return model
 
 
@@ -94,6 +102,6 @@ if __name__ == '__main__':
     model = train_model()
 
     # evaluate the model on validation data and print accuracy
-    X_train, y_train, X_val, y_val, num_input_features, num_classes = prepare_data()
-    score = model.evaluate(X_val.reshape(-1, 1, num_input_features), y_val, verbose=0)
+    X_train, y_train, X_val, y_val, num_input_features, num_classes, num_batches = prepare_data(n_components=10, batch_size=64)
+    score = model.evaluate(X_val.reshape(-1, 2, num_input_features), y_val, verbose=0)
     print('Validation accuracy:', score[1])
