@@ -7,7 +7,7 @@ from keras.callbacks import EarlyStopping
 from sklearn.decomposition import PCA
 
 def prepare_data():
-    # load the data from an Excel file 
+    # load the data from the CSV file 
     data = pd.read_csv('Mirai.csv')
     
     # drop null values
@@ -23,10 +23,9 @@ def prepare_data():
     target_col = 'Flow_Duration'
     X = data.drop(columns=[target_col], axis=1).values
     y = data[target_col].values
-
-    # PCA for feature extraction 
-    pca = PCA(n_components=10)
-    X = pca.fit_transform(X)
+    
+    # reshape X into a 3D array with shape (n_samples, 2, num_input_features)
+    X = X.reshape(-1, 2, X.shape[1])
 
     # split the data into training and validation sets 
     train_size = int(0.8 * len(X))
@@ -34,17 +33,18 @@ def prepare_data():
     X_val, y_val = X[train_size:], y[train_size:]
 
     # get number of input features and output classes 
-    num_input_features = X_train.shape[1]
+    num_input_features = X_train.shape[2]
     num_classes = len(set(y))
 
-    return X_train.reshape(-1, 1, num_input_features), y_train, X_val.reshape(-1, 1, num_input_features), y_val, num_input_features, num_classes
+    return X_train, y_train, X_val, y_val, num_input_features, num_classes
+
 
 # define the model architecture
 def define_model(num_input_features, num_classes):
     model = Sequential()
 
     # add LSTM layer with dropout, activation, normalization and regularisation
-    model.add(LSTM(units=64, input_shape = (1, num_input_features), return_sequences=True, kernel_regularizer=l2(0.01)))
+    model.add(LSTM(units=64, input_shape=(2, num_input_features), return_sequences=True, kernel_regularizer=l2(0.01)))
     model.add(Dropout(0.2))
     model.add(Activation('relu'))
     model.add(BatchNormalization())
@@ -56,21 +56,19 @@ def define_model(num_input_features, num_classes):
     model.add(BatchNormalization())
 
     # add third LSTM layer with dropout, activation, normalization and regularisation
-    model.add(LSTM(units=64, kernel_regularizer=l2(0.01)))
+    model.add(LSTM(units=64, return_sequences=True, kernel_regularizer=l2(0.01)))
     model.add(Dropout(0.2))
     model.add(Activation('relu'))
     model.add(BatchNormalization())
 
     #add fourth LSTM layer with dropout, activation, normalisation and regularisation 
-    model.add(LSTM(units=64, kernel_regularizer=l2(0.01)))
+    model.add(LSTM(units=64, return_sequences=True, kernel_regularizer=l2(0.01)))
     model.add(Dropout(0.2))
     model.add(Activation('relu'))
     model.add(BatchNormalization())
 
     # add output layer
     model.add(Dense(units=num_classes, activation='softmax'))
-
-    print(model.summary())
 
     # compile the model
     model.compile(optimizer='adam', loss='sparse_categorical_crossentropy', metrics=['accuracy'])
