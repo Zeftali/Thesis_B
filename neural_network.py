@@ -23,11 +23,11 @@ def prepare_data():
 
     # split data into X and y
     target_col = 'Bwd_Blk_Rate_Avg'
-    X = data.drop(columns=[target_col], axis=0).values
+    X = data.drop(columns=['Flow_Duration', 'Idle_Mean', 'Idle_Max', 'Idle_Min', 'Init_Bwd_Win_Byts', 'Subflow_Bwd_Pkts'], axis=1).values
     y = data[target_col].values
 
     # PCA for feature extraction 
-    pca = PCA(n_components=2)
+    pca = PCA(n_components=1)
     X = pca.fit_transform(X)
 
     # split the data into training and validation sets 
