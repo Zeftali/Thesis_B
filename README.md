@@ -12,7 +12,7 @@ Currently, the approach utilises a Recurrent Neural Network (RNN) - Long Short T
 - Detection Technique
     - Done through RNN-LSTM implementation 
 
-The approach is currently being used against a benign malware Iot dataset (Mirai) and is producing these results: 
+The approach is currently being used against a benign malware IoT dataset (Mirai) and is producing these results: 
 - Loss - 3.4
 - Accuracy - 30%
 - Val_Loss - 4
