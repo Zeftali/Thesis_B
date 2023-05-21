@@ -22,9 +22,9 @@ def prepare_data():
     data = data.select_dtypes(include=np.number)
 
     # split data into X and y
-    target_col = 'Bwd_Blk_Rate_Avg'
-    X = data.drop(columns=['Flow_Duration', 'Idle_Mean', 'Idle_Max', 'Idle_Min', 'Init_Bwd_Win_Byts', 'Subflow_Bwd_Pkts'], axis=1).values
-    y = data[target_col].values
+    target_cols = ['Tot_Fwd_Pkts', 'Tot_Bwd_Pkts', 'Flow_Pkts/s', 'Flow_Byts/s', 'Flow_Duration']
+    X = data.drop(columns=['Idle_Mean', 'Idle_Max', 'Idle_Min', 'Init_Bwd_Win_Byts', 'Subflow_Bwd_Pkts'], axis=1).values
+    y = data[target_cols].values
 
     # PCA for feature extraction 
     pca = PCA(n_components=1)
@@ -35,7 +35,7 @@ def prepare_data():
 
     # get number of input features and output classes 
     num_input_features = X_train.shape[1]
-    num_classes = 831
+    num_classes = len(target_cols)
 
     return X_train.reshape(-1, 1, num_input_features), y_train, X_val.reshape(-1, 1, num_input_features), y_val, num_input_features, num_classes
 
@@ -61,7 +61,7 @@ def define_model(num_input_features, num_classes):
     model.add(Activation('relu'))
     model.add(BatchNormalization())
 
-    # add third LSTM layer with dropout, activation, normalization and regularisation
+    # add fourth LSTM layer with dropout, activation, normalization and regularisation
     model.add(LSTM(units=128, kernel_regularizer=l2(0.01)))
     model.add(Dropout(0.2))
     model.add(Activation('relu'))
@@ -71,7 +71,7 @@ def define_model(num_input_features, num_classes):
     model.add(Dense(units=num_classes, activation='softmax'))
 
     # compile the model
-    model.compile(optimizer=Adam(learning_rate=0.001), loss='sparse_categorical_crossentropy', metrics=['accuracy'])
+    model.compile(optimizer=Adam(learning_rate=0.0001), loss='mean_squared_logarithmic_error', metrics=['accuracy'])
 
     return model
 
@@ -85,7 +85,7 @@ def train_model():
     early_stop = EarlyStopping(monitor='val_loss', patience=10, verbose=1)
 
     # train the model
-    model.fit(X_train, y_train, batch_size=128, epochs=100, validation_data=(X_val, y_val), callbacks=[early_stop])
+    model.fit(X_train, y_train, batch_size=256, epochs=100, validation_data=(X_val, y_val), callbacks=[early_stop])
     return model
 
 
