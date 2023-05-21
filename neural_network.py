@@ -85,7 +85,7 @@ def train_model():
     early_stop = EarlyStopping(monitor='val_loss', patience=10, verbose=1)
 
     # train the model
-    model.fit(X_train, y_train, batch_size=256, epochs=100, validation_data=(X_val, y_val), callbacks=[early_stop])
+    model.fit(X_train, y_train, batch_size=128, epochs=100, validation_data=(X_val, y_val), callbacks=[early_stop])
     return model
 
 
