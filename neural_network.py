@@ -7,6 +7,9 @@ from keras.callbacks import EarlyStopping
 from sklearn.decomposition import PCA
 from sklearn.model_selection import train_test_split
 from keras.optimizers import Adam
+import matplotlib.pyplot as plt
+
+
 
 def prepare_data():
     # load the data from an Excel file 
@@ -85,10 +88,29 @@ def train_model():
     early_stop = EarlyStopping(monitor='val_loss', patience=10, verbose=1)
 
     # train the model
-    model.fit(X_train, y_train, batch_size=128, epochs=100, validation_data=(X_val, y_val), callbacks=[early_stop])
+    history = model.fit(X_train, y_train, batch_size=128, epochs=100, validation_data=(X_val, y_val), callbacks=[early_stop])
+   
+   # plot the training and validation metrics
+    plt.plot(history.history['accuracy'])
+    plt.plot(history.history['val_accuracy'])
+    plt.title('Model Accuracy')
+    plt.xlabel('Epoch')
+    plt.ylabel('Accuracy')
+    plt.legend(['Train', 'Validation'], loc='upper left')
+    plt.show()
+
+    plt.plot(history.history['loss'])
+    plt.plot(history.history['val_loss'])
+    plt.title('Model Loss')
+    plt.xlabel('Epoch')
+    plt.ylabel('Loss')
+    plt.legend(['Train', 'Validation'], loc='upper right')
+    plt.show()
+    
     return model
 
 
 if __name__ == '__main__':
     # train the model and get the trained model
     model = train_model()
+
