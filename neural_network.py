@@ -19,8 +19,8 @@ def prepare_data():
     data.dropna(inplace=True)
     
     # split data into X and y
-    target_cols = ['Sub_Cat_Mirai']
-    X = data.drop(columns=['Sub_Cat_Mirai'], axis=1).values
+    target_cols = ['Cat']
+    X = data.drop(columns=['Cat'], axis=1).values
     y = data[target_cols].values
 
     # binning the target variable
