@@ -20,13 +20,11 @@ def prepare_data():
 
     # encode categorical variables
     data = pd.get_dummies(data)
-
-    # select numeric columns only
-    data = data.select_dtypes(include=np.number)
-
+    
+    print(data.columns)
     # split data into X and y
-    target_cols = ['Flow_Duration']
-    X = data.drop(columns=['Idle_Mean', 'Idle_Max', 'Idle_Min', 'Init_Bwd_Win_Byts', 'Subflow_Bwd_Pkts'], axis=1).values
+    target_cols = ['Sub_Cat_Mirai']
+    X = data.drop(columns=['Sub_Cat_Mirai'], axis=1).values
     y = data[target_cols].values
 
     # binning the target variable
