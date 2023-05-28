@@ -5,6 +5,7 @@ from keras.layers import Dense, LSTM, Dropout, Activation, BatchNormalization
 from keras.regularizers import l2
 from keras.callbacks import EarlyStopping
 from sklearn.decomposition import PCA
+from sklearn.metrics import f1_score, precision_score, recall_score
 from sklearn.model_selection import train_test_split
 from keras.optimizers import Adam
 import matplotlib.pyplot as plt
@@ -24,26 +25,40 @@ def prepare_data():
     data = data.select_dtypes(include=np.number)
 
     # split data into X and y
-    target_cols = ['Tot_Fwd_Pkts', 'Tot_Bwd_Pkts', 'Flow_Pkts/s', 'Flow_Byts/s']
+    target_cols = ['Flow_Duration']
     X = data.drop(columns=['Idle_Mean', 'Idle_Max', 'Idle_Min', 'Init_Bwd_Win_Byts', 'Subflow_Bwd_Pkts'], axis=1).values
     y = data[target_cols].values
 
-    #normalise the input features
+    # binning the target variable
+    num_classes = 5  # adjust the number of classes as needed
+    labels = range(num_classes)
+    y = pd.cut(y.flatten(), bins=num_classes, labels=labels, right=True)
+
+    # convert y to numpy array and reshape for compatibility with the model
+    y = np.array(y).reshape(-1, 1)
+
+    # normalize the input features
     scaler = StandardScaler()
     X = scaler.fit_transform(X)
 
-    # PCA for feature extraction. Determined number of components using explained variance ratio.
+    # PCA for feature extraction. Determine the number of components using explained variance ratio.
     pca = PCA(n_components=4)
     X = pca.fit_transform(X)
 
-    # split the data into training and validation sets 
+    # split the data into training and validation sets
     X_train, X_val, y_train, y_val = train_test_split(X, y, test_size=0.2, random_state=42)
 
-    # get number of input features and output classes 
+    # get the number of input features and output classes
     num_input_features = X_train.shape[1]
-    num_classes = len(target_cols)
 
-    return X_train.reshape(-1, 1, num_input_features), y_train, X_val.reshape(-1, 1, num_input_features), y_val, num_input_features, num_classes
+    return (
+        X_train.reshape(-1, 1, num_input_features),
+        y_train,
+        X_val.reshape(-1, 1, num_input_features),
+        y_val,
+        num_input_features,
+        num_classes,
+    )
 
 # define the model architecture
 def define_model(num_input_features, num_classes):
@@ -74,10 +89,10 @@ def define_model(num_input_features, num_classes):
     model.add(BatchNormalization())
 
     # add output layer
-    model.add(Dense(units=num_classes))
+    model.add(Dense(units=num_classes, activation="softmax"))
 
     # compile the model
-    model.compile(optimizer=Adam(learning_rate=0.0001), loss='mean_squared_logarithmic_error', metrics=['accuracy'])
+    model.compile(optimizer=Adam(learning_rate=0.0001), loss='sparse_categorical_crossentropy', metrics=['accuracy'])
 
     return model
 
@@ -109,7 +124,25 @@ def train_model():
     plt.ylabel('Loss')
     plt.legend(['Train', 'Validation'], loc='upper right')
     plt.show()
-    
+
+
+    # evaluate the model on the validation set
+    y_val_pred_prob = model.predict(X_val)
+    y_val_pred = np.argmax(y_val_pred_prob, axis=1)
+
+    # convert y_val to numpy array and reshape for compatibility with classification metrics
+    y_val = np.array(y_val).reshape(-1)
+
+     # compute classification metrics
+    precision = precision_score(y_val, y_val_pred, average='macro')
+    recall = recall_score(y_val, y_val_pred, average='macro')
+    f1 = f1_score(y_val, y_val_pred, average='macro')
+
+    print("Precision: {:.4f}".format(precision))
+    print("Recall: {:.4f}".format(recall))
+    print("F1-score: {:.4f}".format(f1))
+
+
     return model
 
 
