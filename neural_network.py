@@ -17,11 +17,7 @@ def prepare_data():
 
     # drop null values
     data.dropna(inplace=True)
-
-    # encode categorical variables
-    data = pd.get_dummies(data)
     
-    print(data.columns)
     # split data into X and y
     target_cols = ['Sub_Cat_Mirai']
     X = data.drop(columns=['Sub_Cat_Mirai'], axis=1).values
