@@ -13,10 +13,10 @@ Currently, the approach utilises a Recurrent Neural Network (RNN) - Long Short T
     - Done through RNN-LSTM implementation 
 
 The approach is currently being used against a benign malware IoT dataset (Mirai) and is producing these results: 
-- Loss - 60 (decreases after each epoch)
-- Accuracy - 90% (average)
-- Val_Loss - 60 (decreases after each epoch)
-- Val_Accuracy - 87% (average)
+- Loss - 0.9 (decreases after each epoch)
+- Accuracy - 84% (average)
+- Val_Loss - 0.9 (decreases after each epoch)
+- Val_Accuracy - 86% (average)
 
 NOTE
 - Subject to change as project progresses 
