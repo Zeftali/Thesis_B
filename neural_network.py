@@ -13,7 +13,7 @@ from sklearn.preprocessing import StandardScaler
 
 def prepare_data():
     # load the data from an Excel file 
-    data = pd.read_csv('IoT Network Intrusion.csv')
+    data = pd.read_csv('IoT Network Intrusion.csv') # file not in directory as it is too big for GitHub (tested locally)
 
     # drop null values
     data.dropna(inplace=True)
