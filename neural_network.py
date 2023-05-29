@@ -13,7 +13,7 @@ from sklearn.preprocessing import StandardScaler
 
 def prepare_data():
     # load the data from an Excel file 
-    data = pd.read_csv('Mirai.csv')
+    data = pd.read_csv('IoT Network Intrusion.csv')
 
     # drop null values
     data.dropna(inplace=True)
@@ -24,7 +24,7 @@ def prepare_data():
     y = data[target_cols].values
 
     # binning the target variable
-    num_classes = 5  # adjust the number of classes as needed
+    num_classes = len(np.unique(y))
     labels = range(num_classes)
     y = pd.cut(y.flatten(), bins=num_classes, labels=labels, right=True)
 
