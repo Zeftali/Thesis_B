@@ -45,14 +45,14 @@ def prepare_data():
     X = pca.fit_transform(X)
 
      # Shuffle the data
-    X, y = shuffle(X, y, random_state=42)
+    X, y = shuffle(X, y, random_state=None)
 
     # Apply Random Over-Sampling
     oversampler = RandomOverSampler()
     X, y = oversampler.fit_resample(X, y)
 
     # split the data into training and validation sets
-    X_train, X_val, y_train, y_val = train_test_split(X, y, test_size=0.2, random_state=42)
+    X_train, X_val, y_train, y_val = train_test_split(X, y, test_size=0.2, random_state=None)
 
     # get the number of input features and output classes
     num_input_features = X_train.shape[1]
@@ -105,7 +105,7 @@ def train_model():
     # set early stopping to prevent overfitting
     early_stop = EarlyStopping(monitor='val_loss', patience=10, verbose=1)
     # train the model
-    history = model.fit(X_train, y_train, batch_size=128, epochs=300, validation_data=(X_val, y_val), callbacks=[early_stop])
+    history = model.fit(X_train, y_train, batch_size=32, epochs=300, validation_data=(X_val, y_val), callbacks=[early_stop])
    
    # plot the training and validation metrics
     plt.plot(history.history['accuracy'])
