@@ -26,8 +26,8 @@ def prepare_data():
     data = pd.get_dummies(data)
     
     # split data into X and y
-    target_cols = ['Cat_Mirai']
-    X = data.drop(columns=['Cat_Mirai'], axis=1).values
+    target_cols = ['Cat']
+    X = data.drop(columns=['Cat'], axis=1).values
     y = data[target_cols].values
 
     # num of classes for each unique malware type
@@ -71,22 +71,22 @@ def define_model(num_input_features, num_classes):
     model = Sequential()
     # add LSTM layer with dropout, activation, normalization and regularisation
     model.add(LSTM(units=128, input_shape = (1, num_input_features), return_sequences=True, kernel_regularizer=l2(0.001)))
-    model.add(Dropout(0.5))
+    model.add(Dropout(0.3))
     model.add(Activation('relu'))
     model.add(BatchNormalization())
     # add another LSTM layer with dropout, activation, normalization and regularisation
     model.add(LSTM(units=128, return_sequences=True, kernel_regularizer=l2(0.001)))
-    model.add(Dropout(0.5))
+    model.add(Dropout(0.3))
     model.add(Activation('relu'))
     model.add(BatchNormalization())
     # add third LSTM layer with dropout, activation, normalization and regularisation
     model.add(LSTM(units=128, return_sequences=True, kernel_regularizer=l2(0.001)))
-    model.add(Dropout(0.5))
+    model.add(Dropout(0.3))
     model.add(Activation('relu'))
     model.add(BatchNormalization())
     # add fourth LSTM layer with dropout, activation, normalization and regularisation
     model.add(LSTM(units=128, kernel_regularizer=l2(0.001)))
-    model.add(Dropout(0.5))
+    model.add(Dropout(0.3))
     model.add(Activation('relu'))
     model.add(BatchNormalization())
 
@@ -94,7 +94,7 @@ def define_model(num_input_features, num_classes):
     model.add(Dense(units=num_classes, activation="softmax"))
 
     # compile the model
-    model.compile(optimizer=Adam(learning_rate=0.001), loss='categorical_crossentropy', metrics=['accuracy'])
+    model.compile(optimizer=Adam(learning_rate=0.0001), loss='sparse_categorical_crossentropy', metrics=['accuracy'])
 
     return model
 
