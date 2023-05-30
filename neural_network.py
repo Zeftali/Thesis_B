@@ -43,7 +43,6 @@ def prepare_data():
     scaler = StandardScaler()
     X = scaler.fit_transform(X)
 
-    # PCA for feature extraction. Determined number of components using explained variance ratio.
     # PCA for feature extraction. Determine the number of components using explained variance ratio.
     pca = PCA(n_components=4)
     X = pca.fit_transform(X)
@@ -55,11 +54,9 @@ def prepare_data():
     oversampler = RandomOverSampler()
     X, y = oversampler.fit_resample(X, y)
 
-    # split the data into training and validation sets 
     # split the data into training and validation sets
     X_train, X_val, y_train, y_val = train_test_split(X, y, test_size=0.2, random_state=42)
 
-    # get number of input features and output classes 
     # get the number of input features and output classes
     num_input_features = X_train.shape[1]
 
