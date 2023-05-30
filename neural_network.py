@@ -11,7 +11,6 @@ from keras.optimizers import Adam
 import matplotlib.pyplot as plt
 from sklearn.preprocessing import StandardScaler
 from sklearn.utils import shuffle
-from sklearn.ensemble import RandomForestClassifier
 from imblearn.over_sampling import RandomOverSampler
 
 
@@ -33,8 +32,6 @@ def prepare_data():
 
     # binning the target variable
     num_classes = len(np.unique(y)) 
-    labels = range(num_classes)
-    y = pd.cut(y.flatten(), bins=num_classes, labels=labels, right=True)
 
     # convert y to numpy array and reshape for compatibility with the model
     y = np.array(y).reshape(-1, 1)
@@ -97,7 +94,7 @@ def define_model(num_input_features, num_classes):
     model.add(Dense(units=num_classes, activation="softmax"))
 
     # compile the model
-    model.compile(optimizer=Adam(learning_rate=0.001), loss='sparse_categorical_crossentropy', metrics=['accuracy'])
+    model.compile(optimizer=Adam(learning_rate=0.001), loss='categorical_crossentropy', metrics=['accuracy'])
 
     return model
 
