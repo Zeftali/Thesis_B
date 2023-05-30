@@ -30,7 +30,7 @@ def prepare_data():
     X = data.drop(columns=['Cat_Mirai'], axis=1).values
     y = data[target_cols].values
 
-    # binning the target variable
+    # num of classes for each unique malware type
     num_classes = len(np.unique(y)) 
 
     # convert y to numpy array and reshape for compatibility with the model
