@@ -12,6 +12,7 @@ import matplotlib.pyplot as plt
 from sklearn.preprocessing import StandardScaler
 from sklearn.utils import shuffle
 from imblearn.over_sampling import RandomOverSampler
+from keras.utils import to_categorical
 
 
 
@@ -39,7 +40,10 @@ def prepare_data():
     # normalize the input features
     scaler = StandardScaler()
     X = scaler.fit_transform(X)
-
+    
+    #convert y to one-hot encoded format
+    y = to_categorical(y, num_classes)
+    
     # PCA for feature extraction. Determine the number of components using explained variance ratio.
     pca = PCA(n_components=4)
     X = pca.fit_transform(X)
@@ -56,6 +60,10 @@ def prepare_data():
 
     # get the number of input features and output classes
     num_input_features = X_train.shape[1]
+
+    # convert y_train and y_val to one-hot encoded format
+    y_train = to_categorical(y_train, num_classes)
+    y_val = to_categorical(y_val, num_classes)
 
     return (
         X_train.reshape(-1, 1, num_input_features),
@@ -94,7 +102,7 @@ def define_model(num_input_features, num_classes):
     model.add(Dense(units=num_classes, activation="softmax"))
 
     # compile the model
-    model.compile(optimizer=Adam(learning_rate=0.0001), loss='sparse_categorical_crossentropy', metrics=['accuracy'])
+    model.compile(optimizer=Adam(learning_rate=0.0001), loss='categorical_crossentropy', metrics=['accuracy'])
 
     return model
 
