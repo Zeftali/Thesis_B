@@ -41,9 +41,6 @@ def prepare_data():
     scaler = StandardScaler()
     X = scaler.fit_transform(X)
     
-    #convert y to one-hot encoded format
-    y = to_categorical(y, num_classes)
-    
     # PCA for feature extraction. Determine the number of components using explained variance ratio.
     pca = PCA(n_components=4)
     X = pca.fit_transform(X)
@@ -60,10 +57,6 @@ def prepare_data():
 
     # get the number of input features and output classes
     num_input_features = X_train.shape[1]
-
-    # convert y_train and y_val to one-hot encoded format
-    y_train = to_categorical(y_train, num_classes)
-    y_val = to_categorical(y_val, num_classes)
 
     return (
         X_train.reshape(-1, 1, num_input_features),
