@@ -26,10 +26,7 @@ def prepare_data():
     # split data into X and y
     target_col = 'Cat'
     X = data.drop(columns=[target_col], axis=1).values
-    y = data[target_col].values
-
-    # convert y to binary labels (0: Normal, 1: Mirai)
-    y_binary = np.where(y == 'Mirai', 1, 0)
+    y = data[target_col].map({'Normal': 0, 'Mirai': 1}).values
 
     # normalize the input features
     scaler = StandardScaler()
