@@ -53,7 +53,7 @@ def prepare_data():
     X_train, X_val, y_train, y_val = train_test_split(X, y, test_size=0.2, random_state=None)
 
     # get the number of input features and output classes
-    num_input_features = X_train.shape[1]
+    num_input_features = X_train.shape[2]
 
     return (
         X_train.reshape(-1, 1, num_input_features),
