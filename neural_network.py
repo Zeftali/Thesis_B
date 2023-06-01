@@ -35,7 +35,7 @@ def prepare_data():
     y = np.array(y).reshape(-1, 1)
 
     # normalize the input features
-    scaler = StandardScaler()
+    scaler = MinMaxScaler()
     X = scaler.fit_transform(X)
 
     # PCA for feature extraction. Determine the number of components using explained variance ratio.
